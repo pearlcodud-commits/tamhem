@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="ko"><head><meta charset="utf-8"><title>기후변화 탐험대</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>
+:root{--bg:#eefaf1;--card:#fff;--tx:#17301f;--ac:#1f9d55;--ac2:#ff7a3d;--bd:#cfe6d6;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#10201a;--card:#183027;--tx:#e8f6ec;--bd:#2c5242}}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--tx);font-family:"Noto Sans KR",system-ui,sans-serif;line-height:1.5}
+h1{margin:0;padding:14px;text-align:center;font-size:22px}
+nav{display:flex;gap:6px;padding:0 8px 8px;flex-wrap:wrap;justify-content:center}
+nav button,.b{border:0;border-radius:12px;padding:10px 14px;font:inherit;font-weight:700;background:var(--ac);color:#fff;cursor:pointer}
+nav button.on{background:var(--ac2)}.b.o{background:var(--ac2)}.b.g{background:#6b7c72}
+main{max-width:900px;margin:auto;padding:8px}
+section{display:none}section.on{display:block}
+.c{background:var(--card);border:2px solid var(--bd);border-radius:16px;padding:12px;margin:8px 0}
+textarea,select,input[type=range]{width:100%;font:inherit;border-radius:10px;border:2px solid var(--bd);background:var(--bg);color:var(--tx);padding:8px}
+textarea{min-height:200px}
+.chip{display:inline-block;margin:3px;padding:6px 10px;border-radius:20px;background:var(--bg);border:2px solid var(--bd);cursor:pointer;font-size:14px}
+.chip:hover{border-color:var(--ac)}
+a{color:var(--ac2);font-weight:700}
+.g2{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px}
+.bar{height:16px;background:var(--bd);border-radius:8px;overflow:hidden}.bar i{display:block;height:100%;background:var(--ac2)}
+.big{font-size:40px;text-align:center}@keyframes pp{from{transform:scale(0)}to{transform:scale(1)}}@keyframes fl{to{transform:translateY(-60px);opacity:0}}.m{position:absolute;font-size:52px;cursor:pointer;animation:pp .2s;user-select:none;touch-action:manipulation}.fl{position:absolute;font-weight:900;font-size:22px;color:#ff5a1f;animation:fl .7s forwards;pointer-events:none;white-space:nowrap}
+</style></head><body>
+<h1>🌍 기후변화 탐험대</h1>
+<nav id="nv"></nav>
+<main>
+<section id="s0">
+<div class="c"><b>① 예시 랩 불러오기</b> (그대로 써도 좋고 고쳐 써도 좋아요)<div id="sm"></div></div>
+<div class="c"><b>② 한 줄씩 골라서 만들기</b> (누르면 아래 노랫말에 추가돼요)<div id="pk"></div></div>
+<div class="c"><b>③ 내 노랫말</b> (직접 새로 써도 돼요! 한 줄 = 한 마디)<textarea id="ta" placeholder="여기에 직접 써 보세요"></textarea>
+<button class="b g" onclick="ta.value=''">싹 지우기</button></div>
+<div class="c"><b>④ AI 목소리 + 비트</b>
+<div class="g2"><label>비트<select id="st"><option value="0">붐뱁 (묵직)</option><option value="1">트랩 (빠른 하이햇)</option><option value="2">신나는 댄스</option></select></label>
+<label>목소리<select id="pi"><option value="1.7">아기 AI</option><option value="1" selected>보통 AI</option><option value="0.6">걸걸 AI</option></select></label>
+<label>속도 <input id="rt" type="range" min="0.7" max="1.8" step="0.1" value="1.1"></label>
+<label>비트 빠르기 <input id="bpm" type="range" min="70" max="150" value="95"></label></div>
+<p><button class="b" onclick="rap()">🎤 랩 시작!</button> <button class="b o" onclick="stopAll()">⏹ 멈춤</button> <button class="b g" onclick="navigator.clipboard&&navigator.clipboard.writeText(ta.value)">📋 복사</button></p>
+<small>※ 소리가 안 나면 태블릿 볼륨과 무음 모드를 확인해요. 기기에 한국어 음성이 있어야 해요.</small></div>
+</section>
+
+<section id="s1">
+<div class="c"><b>🎯 조사 미션</b> <button class="b o" onclick="mission()">랜덤 미션 뽑기!</button><div id="ms" style="margin-top:8px"></div></div>
+<p>👇 주황색 글을 누르면 읽을 글이 바로 열려요! 조사한 주제 <b id="cnt">0</b>/<span id="tot"></span> 완료</p>
+<div id="rs"></div>
+<div class="c"><b>📓 내 조사 노트</b><textarea id="nt" placeholder="주제 / 알게 된 점 / 출처 이름(사이트 이름) / 내 생각"></textarea></div>
+</section>
+
+<section id="s2">
+<div id="gm"></div>
+</section>
+
+<section id="s3"><div id="qz"></div></section>
+</main>
+<script>
+const $=s=>document.querySelector(s),ta=$('#ta');
+const T=['🎤 랩 만들기','🔎 기후 조사','🎮 탄소 몬스터 팡팡!','📝 퀴즈'];
+T.forEach((t,i)=>{const b=document.createElement('button');b.textContent=t;b.onclick=()=>go(i);$('#nv').appendChild(b)});
+function go(i){document.querySelectorAll('section').forEach((s,j)=>s.classList.toggle('on',i==j));document.querySelectorAll('nav button').forEach((s,j)=>s.classList.toggle('on',i==j));if(i!=0)stopAll()}
+/* ---------- 랩 ---------- */
+const SONGS=[
+['🔥 뜨거워진 지구',`에어컨 빵빵 밖은 지글지글 지구가 열이 나 열이 나
+여름은 길어지고 겨울은 짧아져 달력이 헷갈려 계절이 울어
+북극곰 발밑 얼음이 녹아 갈 곳을 잃고 둥둥 떠다녀
+이산화탄소 이불처럼 덮여 지구가 답답해 숨을 못 쉬어
+지구야 지구야 아프지 마 우리가 지킬게 약속할게
+끄고 아끼고 줄이고 심고 작은 실천이 큰 파도 돼`],
+['🌊 물폭탄 SOS',`하늘이 뚫린 듯 쏟아지는 비 길이 강이 되고 강이 넘쳐
+바다는 점점 차올라 오고 섬나라 친구들 집을 잃어
+폭염 다음엔 폭설이 오고 한파가 와서 꽁꽁 얼어
+날씨가 왜 이리 극과 극일까 기후변화가 원인이래
+뉴스를 보지 말고 행동하자 오늘부터 우리 시작하자
+기후위기 막는 건 바로 너와 나 함께하면 할 수 있어`],
+['🦸 나는야 지구 히어로',`나는야 지구 히어로 망토는 없지만 마음은 슈퍼
+텀블러 들고 다니면 일회용 컵아 안녕 바이바이
+가까운 길은 걸어가고 안 쓰는 플러그 쏙 뽑아
+잔반은 남기지 않고 분리배출은 척척 정확하게
+나무 한 그루 심어 보자 시원한 그늘 만들어 줘
+탄소를 줄이는 우리 모두 지구를 지키는 히어로야`],
+['🐻‍❄️ 북극곰의 편지',`안녕 나는 북극곰이야 내 얼음집이 작아졌어
+바다에 떠 있는 얼음 위에서 오늘도 밥을 찾고 있어
+너희가 쓰는 전기와 기름 그게 하늘에 쌓여서
+지구를 따뜻하게 만들었대 나는 더워서 힘들어
+부탁이야 조금만 아껴 줘 우리 같이 살아가자
+얼음이 돌아오는 그날까지 나는 기다릴게 고마워`]];
+const PK={'🌡️ 원인':['공장 굴뚝 자동차 연기 하늘로 올라가 이불이 돼','석탄 석유를 너무 태워서 이산화탄소가 쌓여 가','숲이 사라져 나무가 줄어 탄소 먹을 친구가 없어','전기를 펑펑 쓸 때마다 지구 온도가 올라가'],
+'⚡ 현상':['폭염 열대야 잠 못 자는 밤 땀이 주르륵 흘러내려','한파 폭설 꽁꽁 얼어 길도 마음도 미끄러워','쏟아지는 비 넘치는 강 홍수가 마을을 덮쳐','산불이 번져 숲이 타고 동물 친구들 갈 곳이 없어','바닷물이 차올라서 해안가 마을이 위험해'],
+'💚 마음':['모른 척하기엔 지구가 너무 소중해','우리 아이들이 살아갈 미래를 지켜 줘','작은 힘도 모이면 파도가 되는 거야','지금 시작해 내일은 이미 늦어'],
+'🌱 실천':['안 쓰는 불 끄고 플러그 뽑고 에너지를 아껴','텀블러 장바구니 챙겨 일회용품 바이바이','가까운 길은 걸어가고 대중교통 타고 가','분리배출 똑바로 하고 음식은 남기지 말자','나무를 심고 가꾸는 일 지구를 위한 선물이야']};
+$('#sm').innerHTML=SONGS.map((s,i)=>`<span class="chip" onclick="ta.value=SONGS[${i}][1]">${s[0]}</span>`).join('');
+$('#pk').innerHTML=Object.entries(PK).map(([k,v])=>`<p><b>${k}</b><br>`+v.map(l=>`<span class="chip" onclick="ta.value+=(ta.value?'\\n':'')+this.textContent">${l}</span>`).join('')+'</p>').join('');
+const PT=[['x...x...x..x....','....x.......x...','x.x.x.x.x.x.x.x.'],['x.....x...x.....','........x.......','xxxxxxxxxxxxxxxx'],['x...x...x...x...','....x.......x...','..x...x...x...x.']].map(a=>a.map(s=>[...s].map(c=>c=='x')));
+let ac,tm,sp=0,run=0,nb;
+const FQ=n=>220*Math.pow(2,n/12),RT=[0,-4,-2,-5],LD=[[7,-1,-1,10,-1,7,-1,-1,5,-1,-1,7,-1,3,-1,-1],[12,-1,10,-1,7,-1,10,-1,12,-1,15,-1,12,-1,10,-1],[7,7,-1,10,12,-1,10,7,7,7,-1,10,12,-1,15,12]],MX=['1.8,1','1,1','0.5,0.9','1.3,1.2','0.8,1.3'],KV=[];
+function nt(f,t,d,ty,v){const o=ac.createOscillator(),g=ac.createGain();o.type=ty;o.frequency.value=f;g.gain.setValueAtTime(v,t);g.gain.exponentialRampToValueAtTime(.001,t+d);o.connect(g);g.connect(ac.destination);o.start(t);o.stop(t+d)}
+function lv(){const v=speechSynthesis.getVoices().filter(x=>(x.lang||'').toLowerCase().startsWith('ko'));KV.length=0;KV.push(...v);$('#vo').innerHTML=v.length?v.map((x,i)=>`<option value="${i}">${x.name}</option>`).join(''):'<option value="0">기본 목소리</option>'}
+
+function noise(t,d,f,v){const s=ac.createBufferSource();s.buffer=nb;const fl=ac.createBiquadFilter();fl.type='highpass';fl.frequency.value=f;const g=ac.createGain();g.gain.setValueAtTime(v,t);g.gain.exponentialRampToValueAtTime(.001,t+d);s.connect(fl);fl.connect(g);g.connect(ac.destination);s.start(t);s.stop(t+d)}
+function kick(t){const o=ac.createOscillator(),g=ac.createGain();o.frequency.setValueAtTime(150,t);o.frequency.exponentialRampToValueAtTime(40,t+.15);g.gain.setValueAtTime(.9,t);g.gain.exponentialRampToValueAtTime(.001,t+.25);o.connect(g);g.connect(ac.destination);o.start(t);o.stop(t+.3)}
+function beat(){ac=ac||new (window.AudioContext||window.webkitAudioContext)();ac.resume();if(!nb){nb=ac.createBuffer(1,ac.sampleRate,ac.sampleRate);const d=nb.getChannelData(0);for(let i=0;i<d.length;i++)d[i]=Math.random()*2-1}
+const p=PT[+$('#st').value],d=60/$('#bpm').value/4;sp=0;clearInterval(tm);tm=setInterval(()=>{const g=sp,s=sp++%16,t=ac.currentTime,r=RT[(g>>4)%4],y=+$('#st').value;if(p[0][s]){kick(t);nt(FQ(r-12),t,d*3,'triangle',.3)}if(p[1][s])noise(t,.15,1200,.5);if(p[2][s])noise(t,.04,7000,.2);const m=LD[y][s];if(m>=0)nt(FQ(r+m+12),t,d*2,y?'square':'triangle',y?.05:.14)},d*1000)}
+function stopAll(){run=0;clearInterval(tm);if(window.speechSynthesis)speechSynthesis.cancel()}
+function rap(){const L=ta.value.split('\n').filter(x=>x.trim());if(!L.length){alert('노랫말을 먼저 만들어 보세요!');return}
+stopAll();run=1;beat();let i=0;(function n(){if(!run||i>=L.length){stopAll();return}const u=new SpeechSynthesisUtterance(L[i++]);u.lang='ko-KR';u.rate=+$('#rt').value;u.pitch=+$('#pi').value;u.onend=()=>setTimeout(n,250);u.onerror=stopAll;speechSynthesis.speak(u)})()}
+/* ---------- 조사 ---------- */
+const W=t=>['위키백과 '+t,'https://ko.wikipedia.org/wiki/'+t];
+const KMA=['기상청 날씨누리','https://www.weather.go.kr'],CP=['기상청 기후정보포털','https://www.climate.go.kr'],SK=['국민재난안전포털','https://www.safekorea.go.kr'];
+const R0=[
+['🥵','폭염','우리나라에서 폭염이 가장 심했던 해는 언제일까?|폭염과 열대야는 무엇이 다를까?|폭염에 몸을 지키는 방법 5가지는?','폭염 원인, 열대야 뜻, 폭염 피해, 폭염 대처법',[KMA,CP,W('폭염')]],
+['🥶','한파','한파는 어떤 날씨를 말할까?|지구가 더워지는데 왜 한파가 오기도 할까?|한파 때 조심할 것은?','한파 뜻, 한파 특보 기준, 북극 한파, 한파 대비',[KMA,SK,W('한파')]],
+['🌊','홍수','홍수는 왜 생길까?|최근 우리나라에서 큰 비 피해가 있었던 곳은?|홍수 때 행동 요령은?','집중호우, 장마, 홍수 피해 사례, 침수 대피',[SK,KMA,W('홍수')]],
+['❄️','폭설','폭설은 눈이 얼마나 오는 것일까?|폭설로 생기는 피해는?|눈이 많이 오는 지역은 어디일까?','대설 특보, 폭설 피해, 제설 작업',[KMA,SK,W('폭설')]],
+['🏜️','가뭄','가뭄은 왜 생길까?|가뭄이 농사와 물 사용에 주는 영향은?|물을 아끼는 방법은?','가뭄 원인, 물 부족 국가, 가뭄 피해',[SK,CP,W('가뭄')]],
+['🔥','산불','산불은 어떻게 번질까?|기후변화와 산불의 관계는?|산불 예방 수칙은?','산불 원인, 대형 산불, 산불 예방',[SK,W('산불')]],
+['🌀','태풍','태풍은 어디서 어떻게 생길까?|바다가 따뜻해지면 태풍은 어떻게 될까?|태풍 이름은 누가 붙일까?','태풍 발생, 태풍 이름, 태풍 피해',[KMA,W('태풍')]],
+['🧊','빙하와 해수면','빙하가 녹으면 바다 높이는 어떻게 될까?|해수면 상승으로 위험한 나라와 도시는?|북극곰은 왜 힘들까?','해수면 상승, 빙하 감소, 북극 얼음, 투발루',[['NASA 해수면 (영어)','https://climate.nasa.gov/vital-signs/sea-level/'],['NASA 어린이 기후 사이트 (영어)','https://climatekids.nasa.gov/'],W('해수면_상승')]],
+['🌡️','지구온난화 원리','온실효과는 어떻게 일어날까?|온실가스에는 무엇이 있을까?|지구 평균 기온은 얼마나 올랐을까?','온실효과, 온실가스, 지구 평균기온 상승',[W('지구_온난화'),W('온실_가스'),CP]],
+['🐝','동식물과 농사','기후변화로 사과·귤 재배지는 어떻게 달라질까?|꿀벌과 곤충은 왜 줄어들까?|바다 생물에는 어떤 변화가 있을까?','재배지 북상, 꿀벌 감소, 산호 백화, 어종 변화',[['WWF 한국','https://www.wwfkorea.or.kr'],CP]],
+['♻️','탄소중립과 실천','탄소중립이란 무엇일까?|우리나라는 언제까지 탄소중립을 하겠다고 했을까?|우리 학교와 집에서 할 수 있는 실천은?','탄소중립 뜻, 2050 탄소중립, 재생에너지, 제로웨이스트',[['2050 탄소중립녹색성장위원회','https://www.2050cnc.go.kr'],['UN 기후행동 (영어)','https://www.un.org/en/climatechange'],['환경부','https://www.me.go.kr']]]];
+const R=[
+['🥵','폭염','폭염과 열대야는 무엇이 다를까?|폭염주의보와 폭염경보는 어떻게 다를까?|최근 우리나라 폭염일수는 얼마나 늘었을까?|폭염 때 몸을 지키는 방법은?','폭염 기준, 폭염일수, 열대야, 온열질환',[['[기상청] 폭염·한파·호우·대설 특보 발표 기준 표','https://www.weather.go.kr/kma/biz/forecast03.jsp'],['[네이버 지식백과] 폭염 (사전 설명)','https://terms.naver.com/entry.nhn?docId=3578400&cid=58947&categoryId=58981'],['[그린피스] 매년 강해지는 폭염, 그 이유는?','https://www.greenpeace.org/korea/update/14855/blog-ce-heat-wave/'],['[뉴시스] 한국 기후위기 평가보고서 2025: 폭염일수 사상 최대','https://www.newsis.com/view/NISX20250918_0003334257'],['[질병관리청] 폭염·한파의 건강영향','https://health.kdca.go.kr/healthhazard/clmtInfo/abnrmlClmtInfo']]],
+['🥶','한파','한파주의보는 언제 내려질까?|한파 때 몸에 생기는 문제는?|한파 때 조심할 점은?','한파 기준, 한랭질환, 체감온도',[['[기상청] 한파 특보 발표 기준 (같은 표에서 한파 찾기)','https://www.weather.go.kr/kma/biz/forecast03.jsp'],['[질병관리청] 폭염·한파의 건강영향 (한랭질환)','https://health.kdca.go.kr/healthhazard/clmtInfo/abnrmlClmtInfo']]],
+['🌊','홍수','최근 우리나라 비의 모습은 어떻게 달라졌을까?|호우 특보는 어떤 기준일까?|홍수·침수 때 행동 요령은?','집중호우, 극단적 비, 침수, 지하차도',[['[머니투데이] 폭주하는 날씨, 한반도 극단적 비가 뉴노멀','https://www.mt.co.kr/society/2025/08/14/2025081322433975574'],['[기상청] 호우 특보 발표 기준 (같은 표에서 호우 찾기)','https://www.weather.go.kr/kma/biz/forecast03.jsp'],['[인천시] 여름철 태풍·호우 대응 행동요령','https://www.incheon.go.kr/safe/SAFE060301/2013552'],['[경기소방] 호우·홍수·침수 국민행동요령 (PDF)','https://119.gg.go.kr/wp-content/plugins/uploadingdownloading-non-latin-filename/download.php?id=88007']]],
+['❄️','폭설','대설주의보는 눈이 얼마나 올 때일까?|폭설이 오면 어떤 피해가 생길까?|폭설 때 행동 요령은?','대설 특보, 제설, 빙판길',[['[기상청] 대설 특보 발표 기준 (같은 표에서 대설 찾기)','https://www.weather.go.kr/kma/biz/forecast03.jsp'],['[도봉구] 대설 발생 시 국민 행동 요령','https://www.dobong.go.kr/Contents.asp?code=10010082&tab=4']]],
+['🏜️','가뭄','기후변화는 가뭄과 어떤 관계일까?|가뭄은 산불과 어떻게 이어질까?','가뭄, 건조, 강수량, 물 부족',[['[경북매일] 산불 원인은 기후변화로 인한 가뭄!','https://kbmaeil.com/article/202204030331449'],['[머니투데이] 산불·홍수·가뭄이 한꺼번에 오는 이유','https://www.mt.co.kr/world/2025/01/27/2025012416554362094']]],
+['🔥','산불','산불이 크게 번지는 까닭은?|우리나라 대형산불은 얼마나 늘었을까?|산불은 누구의 실수로 가장 많이 날까?','대형산불, 건조, 입산자 실화',[['[서울신문] 올해만 대형산불 11건, 산불 연중화·대형화','https://m.seoul.co.kr/news/2022/11/04/20221104500158'],['[그린피스] 울진 산불, 대형화의 원인은 기후변화','https://www.greenpeace.org/korea/update/21919/blog-ce-uljin-wildfire-climate-change/'],['[매일신문] 산불 확산 요소와 입산자 실화 통계','https://www.imaeil.com/page/view/2025033017202083663']]],
+['🌀','태풍','태풍이 오면 어떤 피해가 생길까?|기후변화로 비와 태풍 피해는 어떻게 달라질까?|태풍 때 행동 요령은?','태풍, 호우, 풍수해, 대피',[['[인천시] 여름철 태풍·호우 대응 행동요령','https://www.incheon.go.kr/safe/SAFE060301/2013552'],['[소백산국립공원] 기후의 변화 (태풍·집중호우 피해 증가, PDF)','https://knps.or.kr/archive/files/original/8ac436d3f7887c9c0426738fe6cb1039d60052b9.pdf'],['[기상청] 태풍 특보 발표 기준 (같은 표에서 태풍 찾기)','https://www.weather.go.kr/kma/biz/forecast03.jsp']]],
+['🧊','빙하와 해수면','한반도 바다 높이는 얼마나 빨리 오르고 있을까?|해수면이 오르면 우리 바닷가는 어떻게 될까?|빙하가 녹으면 왜 문제일까?','해수면 상승, 서해안, 만조, 침수',[['[데일리안] 한반도 기온·해수면 상승 속도가 지구 평균보다 빠르다','https://www.dailian.co.kr/news/view/908362/'],['[서울신문] 밀물·썰물도 기후변화 탄다, 서해 조석 변화','https://www.seoul.co.kr/news/society/science-news/2026/09/21/20260921500059'],['[소백산국립공원] 기후의 변화 (해수면 상승 설명, PDF)','https://knps.or.kr/archive/files/original/8ac436d3f7887c9c0426738fe6cb1039d60052b9.pdf']]],
+['🌡️','지구온난화 원리','기후변화의 자연적 원인과 사람 때문인 원인은?|온실가스는 왜 늘었을까?|한반도 기온은 얼마나 올랐고 앞으로 얼마나 오를까?','온실가스, 화석연료, 평균기온',[['[소백산국립공원] 기후의 변화: 원인과 영향 (PDF)','https://knps.or.kr/archive/files/original/8ac436d3f7887c9c0426738fe6cb1039d60052b9.pdf'],['[뉴시스] 한국 기후위기 평가보고서 2025: 기온 역대 1·2위','https://www.newsis.com/view/NISX20250918_0003334257'],['[머니투데이] 2025 한반도 기후변화 리포트','https://www.mt.co.kr/society/2025/08/14/2025081322433975574']]],
+['🐝','동식물과 농사','사과 재배지는 어떻게 달라질까?|꿀벌이 줄어드는 까닭은?|우리나라에서 아열대 식물과 작물이 늘고 있을까?','사과 재배적지, 꿀벌, 아열대',[['[경기일보] 경기도 사과 재배적지 변화 예측','https://kyeonggi.com/article/202104211164231'],['[다음뉴스] 기후변화가 바꾼 작물지도, 경기북부 사과','https://v.daum.net/v/20251001203214311'],['[헤럴드경제] 기후위기에 사라지는 꿀벌, 정부 보호 연구','https://biz.heraldcorp.com/article/10783329'],['[서울신문] 제주에서 아열대 식물 첫 발견','https://www.seoul.co.kr/news/society/2026/05/12/20260512500068'],['[파이낸셜뉴스] 광주·강릉·울진도 아열대 조건','https://www.fnnews.com/news/202606161755454163']]],
+['♻️','탄소중립과 실천','탄소중립이란 무엇일까?|파리협정은 어떤 약속일까?|우리나라는 언제까지 탄소중립을 하겠다고 했을까?','탄소중립, 파리협정, 1.5도, 2050',[['[구로구] 탄소중립이란? 파리협정 설명','https://www.guro.go.kr/www/contents.do?key=4542&'],['[유가크루] 2050 탄소중립 쉬운 설명','https://www.yugacrew.com/yugawiki/2050%20%ED%83%84%EC%86%8C%EC%A4%91%EB%A6%BD'],['[노컷뉴스] 넷제로·1.5℃·파리협정, 탄소중립이 내 삶을 바꾼다','https://nocutnews.co.kr/news/5597995']]]];
+const NV=(k,w)=>'https://search.naver.com/search.naver?'+(w?'where='+w+'&':'')+'query='+encodeURIComponent(k);
+const SL=q=>`<a href="${NV(q)}" target="_blank" rel="noopener">${q}</a>`;
+const BT=k=>[['🔍 네이버 검색',NV(k)],['📰 뉴스',NV(k,'news')],['📚 지식백과','https://terms.naver.com/search.naver?query='+encodeURIComponent(k)],['🖼️ 그림',NV(k,'image')],['📖 위키백과','https://ko.wikipedia.org/w/index.php?search='+encodeURIComponent(k)]];
+$('#tot').textContent=R.length;
+$('#rs').innerHTML=R.map((r,i)=>`<div class="c"><label><input type="checkbox" onchange="cnt()"> <b>${r[0]} ${r[1]}</b></label><ul>${r[2].split('|').map(q=>'<li>'+q+'</li>').join('')}</ul><div>🔑 글에서 찾아볼 낱말: <small>${r[3]}</small></div><div style="margin-top:6px">👇 누르면 그 글이 바로 열려요!${r[4].map(l=>`<div style="margin:6px 0"><a href="${l[1]}" target="_blank" rel="noopener">${l[0]}</a></div>`).join('')}</div></div>`).join('');
+function cnt(){$('#cnt').textContent=document.querySelectorAll('#rs input:checked').length}
+function mission(){const r=R[Math.random()*R.length|0],q=r[2].split('|');$('#ms').innerHTML=`<div class="big">${r[0]}</div><b>${r[1]}</b>: ${q[Math.random()*q.length|0]}<br>👉 <a href="${r[4][0][1]}" target="_blank" rel="noopener">${r[4][0][0]}</a>`}
+/* ---------- 게임 ---------- */
+let G;
+const CD=[['🌞','태양광 패널',6,g=>g.E-=1.5,'탄소 크게 감소'],['🌳','나무 심기',3,g=>{g.E-=.6;g.tree++},'폭염·산불 피해 막기'],['🚌','대중교통 늘리기',5,g=>{g.E-=1;g.h+=4},'시민 행복 +'],['♻️','분리배출 캠페인',2,g=>{g.E-=.4;g.h+=2},'싸고 든든'],['🏠','단열 리모델링',5,g=>{g.E-=1;g.inc++;g.ins++},'수입 +1, 한파 막기'],['🌊','빗물 둑 쌓기',5,g=>g.dike++,'홍수 피해 막기'],['🎓','환경 교육',4,g=>{g.E-=.5;g.inc++;g.h+=3},'수입 +1'],['🏭','공장 늘리기',0,g=>{g.c+=5;g.E+=2},'⚠️ 유혹! 코인 +5 하지만 탄소 증가']];
+const EV=[['🥵 폭염','tree'],['🌊 홍수','dike'],['🔥 산불','tree'],['🥶 한파','ins']];
+function newG(){G={y:2025,t:1.2,c:10,h:60,E:10,inc:5,tree:0,dike:0,ins:0,ap:2,log:['2025년, 탄소중립 마을의 시장님이 되었어요! 올해 행동 2번까지 할 수 있어요.']};dg()}
+function dg(){const g=G,end=g.y>2050||g.h<=0;let o=`<div class="c"><div class="g2"><div>📅 <b>${g.y}년</b></div><div>🌡️ 온도 <b>+${g.t.toFixed(2)}℃</b></div><div>🪙 코인 <b>${g.c}</b> (매년 +${g.inc})</div><div>😊 행복 <b>${Math.max(0,g.h|0)}</b></div></div>
+<div>탄소 배출량</div><div class="bar"><i style="width:${Math.min(100,Math.max(0,g.E)*8)}%"></i></div><small>🌳${g.tree} 🌊${g.dike} 🏠${g.ins} · 목표: 2050년까지 +2.0℃ 이하, 행복 30 이상</small></div>`;
+if(end){const w=g.h>0&&g.t<=2.0,s=g.t<=1.8?3:g.t<=2?2:g.t<=2.5?1:0;o+=`<div class="c"><div class="big">${w?'🎉':'😢'}</div><h2>${g.h<=0?'시민들이 떠났어요…':w?'지구를 지켰어요!':'아쉬워요, 다시 도전!'}</h2><p>최종 +${g.t.toFixed(2)}℃ ${'⭐'.repeat(s)}</p><button class="b" onclick="newG()">다시 하기</button></div>`}
+else{o+=`<div class="c"><b>이번 해 남은 행동: ${g.ap}</b><div class="g2" style="margin-top:6px">${CD.map((c,i)=>`<button class="b ${i==7?'o':''}" ${g.ap<1||g.c<c[2]?'disabled style="opacity:.4"':''} onclick="buy(${i})">${c[0]} ${c[1]}<br><small>🪙${c[2]} · ${c[4]}</small></button>`).join('')}</div><p><button class="b g" onclick="nx()">➡️ 다음 해로 (${g.y+1}년)</button></p></div>`}
+o+=`<div class="c"><b>📜 마을 소식</b><div style="max-height:160px;overflow:auto">${g.log.slice(-8).reverse().map(l=>'<div>'+l+'</div>').join('')}</div></div>`;$('#gm').innerHTML=o}
+function buy(i){const c=CD[i];if(G.ap<1||G.c<c[2])return;G.c-=c[2];c[3](G);G.ap--;G.E=Math.max(.5,G.E);G.log.push(c[0]+' '+c[1]+'!');dg()}
+function nx(){const g=G;g.c+=g.inc;g.t+=g.E*.008;g.y++;g.ap=2;g.log.push(`📅 ${g.y-1}년 끝! 온도 +${g.t.toFixed(2)}℃`);
+if(Math.random()<.8){const e=EV[Math.random()*4|0],d=Math.max(0,3+Math.floor((g.y-2025)/7)-g[e[1]]);if(d>0){g.c=Math.max(0,g.c-d);g.h-=d*3;g.log.push(`${e[0]} 피해! 코인 -${d}, 행복 -${d*3}`)}else{g.h=Math.min(100,g.h+3);g.log.push(`${e[0]}이 왔지만 잘 막았어요! 행복 +3`)}}
+g.h=Math.min(100,g.h);dg()}
+/* ---------- 탄소 몬스터 팡팡 ---------- */
+const BAD=['💨','🥤','🛍️','🛢️','🏭','🚬'],FR=['🐻‍❄️','🌳','🐝','🐧'],FC=['🥵','😓','🙂','😄','🤩'];
+let GS={s:0,l:3,t:60,c:0,lv:1,on:0},best=0,gt;
+function bp(f){try{ac=ac||new (window.AudioContext||window.webkitAudioContext)();ac.resume();const o=ac.createOscillator(),g=ac.createGain(),t=ac.currentTime;o.type='square';o.frequency.value=f;g.gain.setValueAtTime(.08,t);g.gain.exponentialRampToValueAtTime(.001,t+.15);o.connect(g);g.connect(ac.destination);o.start(t);o.stop(t+.15)}catch(e){}}
+function ph(){$('#gm').innerHTML=`<div class="c" style="text-align:center"><div class="big" id="ge">🌍</div><div id="gi">⭐0 · ❤️❤️❤️ · ⏱60 · 콤보 0</div><div class="bar"><i id="gb" style="width:0"></i></div></div><div id="ar" style="position:relative;height:380px;overflow:hidden;border-radius:16px;background:linear-gradient(#9be7ff,#d9f7be);transition:opacity .1s"></div><p style="text-align:center"><button class="b o" onclick="gs()">▶️ 시작!</button></p><p style="text-align:center">💨🥤🛍️🛢️🏭 나쁜 탄소 몬스터는 터치해서 팡! 🔥콤보를 이어 가면 점수가 쑥쑥!<br>⭐ 보너스(+50점, +3초) · 🐻‍❄️🌳🐝🐧 지구 친구들은 누르면 안 돼요! (❤️가 깎여요)</p>`}
+function ui(){const g=GS;$('#gi').textContent=`⭐${g.s} · ${'❤️'.repeat(Math.max(0,g.l))} · ⏱${g.t} · 콤보 ${g.c} · Lv${g.lv}`;$('#ge').textContent=FC[Math.min(4,g.s/150|0)];$('#gb').style.width=Math.min(100,g.s/8)+'%'}
+function fx(x,y,t){const e=document.createElement('div');e.className='fl';e.textContent=t;e.style.left=x+'px';e.style.top=y+'px';$('#ar').appendChild(e);setTimeout(()=>e.remove(),700)}
+function mk(){const g=GS,r=Math.random(),k=r<.1?2:r<.3?1:0,e=document.createElement('span'),a=$('#ar');e.className='m';e.textContent=k==2?'⭐':k?FR[Math.random()*4|0]:BAD[Math.random()*6|0];e.style.left=(5+Math.random()*80)+'%';e.style.top=(5+Math.random()*75)+'%';
+e.onpointerdown=()=>{if(!g.on||!e.parentNode)return;const x=e.offsetLeft,y=e.offsetTop;e.remove();
+if(k==1){g.l--;g.c=0;bp(120);fx(x,y,'💔 친구야 미안!');a.style.opacity=.5;setTimeout(()=>a.style.opacity=1,150)}
+else if(k==2){g.s+=50;g.t+=3;bp(900);fx(x,y,'⭐ +50 +3초!')}
+else{g.c++;const p=10*(1+(g.c/5|0));g.s+=p;bp(350+Math.min(g.c,20)*35);fx(x,y,(g.c>=5?'🔥':'💥')+' +'+p)}
+g.lv=1+(g.s/200|0);ui();if(g.l<=0)en()};
+a.appendChild(e);setTimeout(()=>{if(e.parentNode){e.remove();if(k==0&&g.on){g.c=0;ui()}}},Math.max(700,1700-g.lv*120))}
+function gs(){clearInterval(gt);$('#ar').innerHTML='';GS={s:0,l:3,t:60,c:0,lv:1,on:1};ui();(function lp(){if(!GS.on)return;mk();if(GS.lv>3&&Math.random()<.5)mk();setTimeout(lp,Math.max(250,800-GS.lv*80))})();gt=setInterval(()=>{GS.t--;ui();if(GS.t<=0)en()},1000)}
+function en(){if(!GS.on)return;GS.on=0;clearInterval(gt);best=Math.max(best,GS.s);const s=GS.s;$('#ar').innerHTML=`<div style="text-align:center;padding-top:80px;font-size:22px"><div class="big">${s>=700?'🏆':s>=300?'🎉':'🌱'}</div><b>점수 ${s}점!</b><br>최고 ${best}점<br>${s>=700?'지구 구출 대성공!':s>=300?'우와 잘했어요! 더 높은 점수에 도전!':'한 번 더 해 볼까요?'}</div>`}
+ph();
+/* ---------- 퀴즈 ---------- */
+const Q=[['다음 중 온실가스가 아닌 것은?',['이산화탄소','메탄','아산화질소','산소'],3,'산소는 온실가스가 아니에요.'],
+['지구온난화의 가장 큰 원인은?',['화석연료 사용 증가','달이 가까워짐','바람이 약해짐','화산이 없어짐'],0,'석탄·석유를 태우면 이산화탄소가 많이 나와요.'],
+['온실효과를 가장 잘 비유한 것은?',['지구에 우산을 씌운다','지구에 이불을 덮어 열을 가둔다','지구에 선풍기를 튼다','지구에 얼음을 넣는다'],1,'온실가스가 열을 가두는 이불 같아요.'],
+['땅 위 빙하가 녹으면 바다 높이는?',['낮아진다','그대로다','높아진다','알 수 없다'],2,'녹은 물이 바다로 흘러가요.'],
+['탄소중립의 뜻으로 알맞은 것은?',['탄소를 하나도 안 쓴다','배출한 만큼 줄이거나 흡수해 순배출을 0으로','공장을 모두 없앤다','나무를 모두 벤다'],1,'남는 탄소가 없게 균형을 맞추는 거예요.'],
+['재생에너지가 아닌 것은?',['태양광','풍력','석탄','수력'],2,'석탄은 화석연료예요.'],
+['나무가 기후변화에 도움이 되는 까닭은?',['이산화탄소를 흡수해서','열을 만들어서','바람을 막아서만','소리를 줄여서'],0,'나무는 광합성으로 이산화탄소를 흡수해요.'],
+['탄소를 줄이는 실천이 아닌 것은?',['안 쓰는 플러그 뽑기','가까운 거리는 걷기','일회용 컵 많이 쓰기','텀블러 쓰기'],2,'일회용품은 만들고 버릴 때 탄소가 나와요.'],
+['파리협정이 노력하기로 한 기온 상승 목표는? (산업화 이전 대비)',['1.5℃ 이내','5℃ 이내','10℃ 이내','제한 없음'],0,'2℃보다 훨씬 낮게, 1.5℃ 이내를 목표로 해요.'],
+['기후변화로 늘어날 수 있는 현상이 아닌 것은?',['폭염','집중호우','해수면 상승','북극 얼음 증가'],3,'북극 얼음은 줄어들고 있어요.']];
+let qi=0,qs=0;
+function dq(){if(qi>=Q.length){$('#qz').innerHTML=`<div class="c"><div class="big">${qs>=9?'🏆':qs>=6?'🌟':'🌱'}</div><h2>${qs} / ${Q.length}점</h2><button class="b" onclick="qi=qs=0;dq()">다시 풀기</button></div>`;return}
+const q=Q[qi];$('#qz').innerHTML=`<div class="c"><small>${qi+1} / ${Q.length}</small><h3>${q[0]}</h3>`+q[1].map((o,i)=>`<p><button class="b" style="width:100%;text-align:left" onclick="aq(${i})">${i+1}. ${o}</button></p>`).join('')+'<div id="fb"></div></div>'}
+function aq(i){const q=Q[qi],ok=i==q[2];if(ok)qs++;document.querySelectorAll('#qz .b').forEach(b=>b.disabled=true);$('#fb').innerHTML=`<h3>${ok?'⭕ 정답!':'❌ 정답은 '+(q[2]+1)+'번'}</h3><p>${q[3]}</p><button class="b o" onclick="qi++;dq()">다음 ➡️</button>`}
+dq();go(0);
+</script></body></html>
